@@ -7,9 +7,11 @@ services:
     environment:
       - FLASK_ENV=production
       - FLASK_APP=app.py
-      - MODEL_PATH=/app/model/best_model.pth # ← Cambiar esto
+      # DUAL MODEL PATHS
+      - MODEL_1_PATH=/app/model/best_model.pth
+      - MODEL_2_PATH=/app/model/modelof.pth
       - PYTHONUNBUFFERED=1
-      - MAX_CONTENT_LENGTH=20971520
+      - MAX_CONTENT_LENGTH=52428800  # 50MB
       - CORS_ORIGIN=https://crackguard.angelproyect.com
     ports:
       - "127.0.0.1:5001:5000"
@@ -30,7 +32,7 @@ services:
 
   crackguard-frontend:
     build:
-      context: ./Frontend
+      context:  ./Frontend
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=/api
@@ -57,14 +59,14 @@ networks:
     ipam:
       config:
         - subnet: 172.32.0.0/16
-  
+
   backend-network:
     external: true
     name: sistema-tours_backend-network
-  
+
   frontend-network:
     external: true
-    name: sistema-tours_frontend-network
+    name:  sistema-tours_frontend-network
 
 volumes:
   crackguard_results:
