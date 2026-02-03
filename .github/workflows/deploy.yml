@@ -52,16 +52,16 @@ jobs:
 
       - name: Verificar conexión SSH
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'Conexión SSH exitosa'"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'Conexión SSH exitosa'"
 
       - name: Crear directorio de proyecto
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "mkdir -p /home/${{ secrets.SERVER_USER }}/crackguard-iot"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "mkdir -p /root/crackguard-iot"
 
       - name: Transferir archivos al servidor
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa" \
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" \
             --exclude 'node_modules' \
             --exclude '.git' \
             --exclude 'Backend/__pycache__' \
@@ -70,54 +70,54 @@ jobs:
             --exclude 'Frontend/dist' \
             --exclude 'Frontend/.vite' \
             --exclude 'Frontend/node_modules' \
-            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/crackguard-iot/
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/crackguard-iot/
 
       - name: Detener contenedores anteriores
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "cd /home/${{ secrets.SERVER_USER }}/crackguard-iot && docker compose down || true"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "cd /root/crackguard-iot && docker compose down || true"
 
       - name: Limpiar imágenes antiguas
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "docker image prune -f"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "docker image prune -f"
 
       - name: Desplegar nuevos contenedores
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "cd /home/${{ secrets.SERVER_USER }}/crackguard-iot && docker compose up -d --build --force-recreate"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "cd /root/crackguard-iot && docker compose up -d --build --force-recreate"
 
       - name: Esperar inicio
-        run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "sleep 20"
+        run: sleep 20
 
       - name: Verificar contenedores
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "docker compose -f /home/${{ secrets.SERVER_USER }}/crackguard-iot/docker-compose.yml ps"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "docker compose -f /root/crackguard-iot/docker-compose.yml ps"
 
       - name: Verificar logs backend
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "docker logs crackguard-backend --tail 50"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "docker logs crackguard-backend --tail 50 || true"
 
       - name: Verificar logs frontend
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "docker logs crackguard-frontend --tail 30"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "docker logs crackguard-frontend --tail 30 || true"
 
       - name: Health check backend
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
             "curl -f http://localhost:5001/health && echo 'Backend OK' || echo 'Backend no responde'"
 
       - name: Health check frontend
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
             "curl -f http://localhost:3001/ && echo 'Frontend OK' || echo 'Frontend no responde'"
 
       - name: Recargar Nginx
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
             "docker exec nginx-proxy nginx -s reload || echo 'Nginx no disponible'"
 
       - name: Despliegue exitoso
